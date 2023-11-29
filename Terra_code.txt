@@ -1,0 +1,79 @@
+provider "aws" {
+  region = "your-aws-region"
+}
+
+# Create VPC
+resource "aws_vpc" "my_vpc" {
+  cidr_block = "10.0.0.0/16"
+  enable_dns_support = true
+  enable_dns_hostnames = true
+  tags = {
+    Name = "my-vpc"
+  }
+}
+
+# Create three subnets across three AZs
+resource "aws_subnet" "subnet1" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "your-az1"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "subnet-1"
+  }
+}
+
+resource "aws_subnet" "subnet2" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.2.0/24"
+  availability_zone       = "your-az2"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "subnet-2"
+  }
+}
+
+resource "aws_subnet" "subnet3" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.3.0/24"
+  availability_zone       = "your-az3"
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "subnet-3"
+  }
+}
+
+# Create security group allowing SSH
+resource "aws_security_group" "allow_ssh" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  ingress {
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Create two instances in different subnets
+resource "aws_instance" "instance1" {
+  ami             = "your-ami-id"
+  instance_type   = "t2.micro"
+  subnet_id       = aws_subnet.subnet1.id
+  security_group  = [aws_security_group.allow_ssh.id]
+  key_name        = "your-key-pair"
+  tags = {
+    Name = "instance-1"
+  }
+}
+
+resource "aws_instance" "instance2" {
+  ami             = "your-ami-id"
+  instance_type   = "t2.micro"
+  subnet_id       = aws_subnet.subnet2.id
+  security_group  = [aws_security_group.allow_ssh.id]
+  key_name        = "your-key-pair"
+  tags = {
+    Name = "instance-2"
+  }
+}
